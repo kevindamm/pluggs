@@ -1,0 +1,32 @@
+role p1, p2
+
+data Statement = silence | betrayal
+
+Decide :: Statement -> Action
+
+init {
+	board.decision :: (Statement, Statement)
+}
+
+legal{?player: Decide(?s)} :- not exists(board.decision)
+
+next{board.decision <- (?s1, ?s2)} :-
+  (   p1.does(Decide(?s1))
+  and p2.does(Decide(?s2))
+  )
+
+terminal :- board.decision != Undecided
+
+
+p1.goal(88) :- board.decision == (silence, silence)
+p2.goal(88) :- board.decision == (silence, silence)
+
+p1.goal(8) :- board.decision == (silence, betrayal)
+p2.goal(100) :- board.decision == (silence, betrayal)
+
+p1.goal(100) :- board.decision == (betrayal, silence)
+p2.goal(8) :- board.decision == (betrayal, silence)
+
+p1.goal(50) :- board.decision == (betrayal, betrayal)
+p2.goal(50) :- board.decision == (betrayal, betrayal)
+

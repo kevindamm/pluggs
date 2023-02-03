@@ -58,10 +58,10 @@ adversaries.
 
 # Syntax
 
-A brief example of a complete definition of tic-tac-toe in plugg:
+A complete definition of tic-tac-toe in plugg, as a brief illustration:
 
 ```
-// A two player game.
+// T-T-T is a two player game.
 role xplayer, oplayer
 
 data Marker = blank | x | o
@@ -72,73 +72,79 @@ init {
 	// Initialize a play grid with rows and columns,
 	// define a 2-dimensional cell type.
 	board.cell = Cell
-	for i in int[1..3]:
-		for j in int[1..3]:
-			board.cell(i, j) = blank
+	for i in int[1..3]: for j in int[1..3]: board.cell(i, j) = blank
 
-	// Start play with xplayer and switch control each turn.
+	// Start play with xplayer
 	board.control = xplayer
+
+	// Whether play can continue.
+	// Inferred from state of board, no initial assignment is necessary.
 	board.open :: bool
 }
 
-next(board.control = oplayer)) :- board.control == xplayer
-next(board.control = xplayer)) :- board.control == oplayer
+next(board.control <- oplayer)) :- board.control == xplayer
+next(board.control <- xplayer)) :- board.control == oplayer
 
 // Marking a cell is the primary action each player has.
-Mark :: int -> int -> Action
+AddMark :: int -> int -> Action
 NOOP :: Action
 
 // A player can mark a cell if it is blank and the player is in control
-legal{?player: Mark(?i, ?j)} :-
-    board.cell(?i, ?j) == blank and control == ?player
+legal{?player: AddMark(?i, ?j)} :-
+  (   board.cell(?i, ?j) == blank
+  and board.control == ?player
+	)
 
 // The only legal move for a player not in control is a no-op.
-legal{?player: NOOP} :- distinct(?player, board.control)
+legal{?player: NOOP} :- ?player != board.control
 
 // A legal marking results in the cell being correctly updated next turn.
-next{board.cell(?i, ?j) = x} :-
-  xplayer.does(Mark(?i, ?j)) and board.cell(?i, ?j) == blank)
-next{board.cell(?i, ?j) = o} :-
-	oplayer.does(Mark(?i, ?j)) and board.cell(?i, ?j) == blank)
+next{board.cell(?i, ?j) <- x} :-
+  xplayer.does(AddMark(?i, ?j)) and board.cell(?i, ?j) == blank)
+next{board.cell(?i, ?j) <- o} :-
+	oplayer.does(AddMark(?i, ?j)) and board.cell(?i, ?j) == blank)
 
 // A cell that has been marked will remain marked.
-next{board.cell(?i, ?j) = ?mark} :-
+next{board.cell(?i, ?j) <- ?mark} :-
 	board.cell(?i, ?j) == ?mark and distinct(?mark, blank)
 
 // A cell will remain blank if it is not the one being marked.
-next{board.cell(?i, ?j) = blank} :- (
+next{board.cell(?i, ?j) <- blank} :- (
 	board.cell(?i, ?j) == blank and
-	board.control.does(Mark(?m, ?n)) and
-	(distinct(?i, ?m) or distinct(?j, ?n))
+	board.control.does(AddMark(?m, ?n)) and
+	(?i != ?m or ?j != ?n)
 )
 
 
 // Evaluating the winning conditions
 
+row :: int -> Marker -> bool
 row(?i, ?mark) :- (
 	board.cell(?i, 1) == ?mark and
   board.cell(?i, 2) == ?mark and
   board.cell(?i, 3) == ?mark
 )
 
+column :: int -> Marker -> bool
 column(?j, ?mark) :- (
 	board.cell(1, ?j) == ?mark and
   board.cell(2, ?j) == ?mark and
   board.cell(3, ?j) == ?mark
 )
 
+diagonal :: Marker -> bool
 diagonal(?mark) :- (
   board.cell(1, 1) == ?mark and
 	board.cell(2, 2) == ?mark and
   board.cell(3, 3) == ?mark
 )
-
 diagonal(?mark) :- (
 	board.cell(1, 3) == ?mark and
 	board.cell(2, 2) == ?mark and
 	board.cell(3, 1) == ?mark
 )
 
+line :: Marker -> bool
 line(?p) :- row(?k, ?p)
 line(?p) :- column(?k, ?p)
 line(?p) :- diagonal(?p)
@@ -147,17 +153,17 @@ board.open :- board.cell(?i, ?j) == blank
 
 terminal :- line(x)
 terminal :- line(o)
-terminal :- ~ board.open
+terminal :- not board.open
 
-// Goal evaluation
+// Goal evaluation: win, lose, draw conditions.
 
 xplayer.goal(100) :- line(x)
-xplayer.goal(50) :- ~ line(x) and ~ line(o) and ~ board.open
 xplayer.goal(0) :- line(o)
+xplayer.goal(50) :- not line(x) and not line(o) and not board.open
 
 oplayer.goal(100) :- line(o)
-oplayer.goal(50) :- ~ line(o) and ~ line(x) and ~ board.open
 oplayer.goal(0) :- line(x)
+oplayer.goal(50) :- not line(o) and not line(x) and not board.open
 ```
 
 You can see that it retains the symbolic and declarative aspects of the language
@@ -221,10 +227,33 @@ Scoring specifier, now a property of Player.
 Indicates a terminating state of the game, the game-end conditions.
 
 
+### Built-in types
+
+## Player
+
+ (via role, maintains intrinsic state)
+
+## Board
+
+ accessible via the `board` variable, properties can be assigned during init
+ (singular, maintains game state between turns)
+
+## Action
+
+ (abstraction for the choice each player has during their turn)
+
+
+
 ## Assertions of fact and inference
 
 
 ## Structured types and properties
+
+By example: _Connect Four is (Tic Tac Toe + Gravity)_
+
+```
+...
+```
 
 
 ## Template matching random variables
