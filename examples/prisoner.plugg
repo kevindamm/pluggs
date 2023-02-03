@@ -15,7 +15,7 @@ next{board.decision <- (?s1, ?s2)} :-
   and p2.does(Decide(?s2))
   )
 
-terminal :- board.decision != Undecided
+terminal :- exists(board.decision)
 
 
 p1.goal(88) :- board.decision == (silence, silence)
