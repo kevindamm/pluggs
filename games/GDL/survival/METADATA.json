@@ -1,0 +1,12 @@
+{
+  "key": "survival",
+  "name": "Survival (choose carefully)",
+  "rulesheet": "survival.kif",
+  "numRoles": 1,
+  "source": "games.ggp.org",
+  "repo": "base",
+  "roleNames": [
+    "robot"
+  ],
+  "version": 1
+}

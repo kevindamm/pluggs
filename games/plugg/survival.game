@@ -1,0 +1,56 @@
+role robot
+
+data State = s1 | s2 | s3 | s4 | s5 | s6 | s7 | s8
+
+init (
+  board.pos = s1
+)
+
+legal (
+  robot->a :- s1
+  robot->b :- s1
+  robot->c :- s1
+  robot->d :- s1
+  robot->e :- s1
+  robot->f :- s1
+  robot->g :- s7
+)
+
+next board.pos <- s2 :- {
+  robot->a
+  board.pos == s1
+}
+next board.pos <- s3 :- {
+  robot->b
+  board.pos == s1
+}
+next board.pos <- s4 :- {
+  robot->c
+  board.pos == s1
+}
+next board.pos <- s5 :- {
+  robot->d
+  board.pos == s1
+}
+next board.pos <- s6 :- {
+  robot->e
+  board.pos == s1
+}
+next board.pos <- s7 :- {
+  robot->f
+  board.pos == s1
+}
+next board.pos <- s8 :- {
+  robot->g
+  board.pos == s7
+}
+
+goal(robot, 100) :- board.pos == s8
+robot.goal(0) :- board.pos != s8
+
+terminal :- board.pos == s2
+terminal :- board.pos == s3
+terminal :- board.pos == s4
+terminal :- board.pos == s5
+terminal :- board.pos == s6
+terminal :- board.pos == s8
